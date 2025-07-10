@@ -830,11 +830,12 @@ class SUSIE_Wrapper(Fine_Mapping):
         assert self.df_ld.notnull().all().all()
         if residual_var is not None: residual_var_init = residual_var
 
-        if hasattr(self.susieR, 'susie_suff_stat'):
-            logging.info('Using susieR::susie_suff_stat()')
-            susie_obj = self.susieR.susie_suff_stat(
-                    bhat=bhat.reshape((m,1)),
-                    shat=np.ones((m,1)),
+        # using susie_rss instead of susie_suff_stat
+        if hasattr(self.susieR, 'susie_rss'):
+            logging.info('Using susieR::susie_rss()')
+            susie_obj = self.susieR.susie_rss(
+                    bhat=bhat,
+                    shat=np.ones(m),
                     R=self.df_ld.values,
                     n=self.n,
                     L=num_causal_snps,
@@ -844,8 +845,9 @@ class SUSIE_Wrapper(Fine_Mapping):
                     estimate_residual_variance=(residual_var is None),
                     max_iter=susie_max_iter,
                     verbose=verbose,
-                    prior_weights=(prior_weights.reshape((m,1)) if use_prior_causal_prob else self.R_null)
+                    prior_weights=(prior_weights if use_prior_causal_prob else self.R_null)
                 )
+
         elif hasattr(self.susieR, 'susie_bhat'):
             logging.info('Using susieR::susie_bhat()')
             susie_obj = self.susieR.susie_bhat(
